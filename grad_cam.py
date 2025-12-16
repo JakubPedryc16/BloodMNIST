@@ -1,4 +1,3 @@
-# grad_cam.py
 import torch
 import torch.nn.functional as F
 import numpy as np
@@ -7,16 +6,14 @@ from torchvision import transforms
 from PIL import Image
 
 from config import Config
-from models import build_model
-from train_utils import get_device
+from models.cnn_models import build_model
+from utils.train_utils import get_device
 from medmnist import INFO
+import os
 
 
 class GradCAM:
     def __init__(self, model, target_layer):
-        """
-        target_layer – np. model.conv3 albo model.conv4
-        """
         self.model = model
         self.target_layer = target_layer
 
@@ -36,9 +33,6 @@ class GradCAM:
         self.target_layer.register_backward_hook(backward_hook)
 
     def generate(self, x, class_idx=None):
-        """
-        x – tensor 1xCxHxW
-        """
         self.model.zero_grad()
         out = self.model(x)
 
@@ -48,7 +42,6 @@ class GradCAM:
         score = out[:, class_idx]
         score.backward()
 
-        # grads: [B, C, H, W]
         grads = self.gradients
         activations = self.activations
 
@@ -81,14 +74,18 @@ def visualize_grad_cam(image_path: str,
     n_classes = len(info["label"])
 
     model = build_model(cfg.model_type, n_classes)
-    model.load_state_dict(torch.load(ckpt_path, map_location=device))
+    state = torch.load(ckpt_path, map_location=device)
+    if isinstance(state, dict) and "model_state" in state:
+        model.load_state_dict(state["model_state"])
+    else:
+        model.load_state_dict(state)
+        
     model.to(device)
     model.eval()
 
-    # wybór warstwy
     if cfg.model_type == "simple_cnn":
         target_layer = model.conv3
-    else:  # deep_cnn
+    else:
         target_layer = model.conv4 if use_deep_layer else model.conv3
 
     cam_gen = GradCAM(model, target_layer)
@@ -102,15 +99,15 @@ def visualize_grad_cam(image_path: str,
         probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
         pred_idx = probs.argmax()
 
-    cam = cam_gen.generate(img_t, class_idx=pred_idx)  # HxW (28x28)
+    cam = cam_gen.generate(img_t, class_idx=pred_idx)
     cam = cv2.resize(cam, (img.size[0], img.size[1]))
 
-    # konwersja obrazka
     img_np = np.array(img)
     heatmap = cv2.applyColorMap((cam * 255).astype(np.uint8), cv2.COLORMAP_JET)
     heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
     overlay = (0.4 * heatmap + 0.6 * img_np).astype(np.uint8)
 
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     cv2.imwrite(output_path, cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
     print("Zapisano Grad-CAM do:", output_path)
     print("Predykcja:", info["label"][str(pred_idx)])
@@ -119,8 +116,6 @@ def visualize_grad_cam(image_path: str,
 
 
 if __name__ == "__main__":
-    # przykład użycia z konsoli:
-    # python grad_cam.py
     cfg = Config()
     cfg.model_type = "deep_cnn"
     visualize_grad_cam(

@@ -1,12 +1,10 @@
-# debug_model_direct.py
-
 import torch
 import torch.nn.functional as F
 
 from config import Config
-from datasets import get_dataloaders, LABELS_BLOODMNIST_FULL
-from models import build_model
-from train_utils import get_device
+from data.datasets import get_dataloaders, LABELS_BLOODMNIST_FULL
+from models.cnn_models import build_model
+from utils.train_utils import get_device
 
 
 def load_model_direct(model_type: str, ckpt_path: str, n_classes: int = 8):
@@ -31,14 +29,12 @@ def main():
     train_loader, val_loader, test_loader, info = get_dataloaders(cfg)
     class_names = [LABELS_BLOODMNIST_FULL[str(i)] for i in range(8)]
 
-    # WYBIERZ MODEL I CHECKPOINT
-    model_type = "deep_cnn"   # albo "simple_cnn"
+    model_type = "deep_cnn"
     ckpt_path = f"{cfg.output_dir}/deep_cnn_adam_noaug.pt"
 
     print(f"Ładuję model {model_type} z {ckpt_path}")
     model, device = load_model_direct(model_type, ckpt_path)
 
-    # Weź jedną paczkę z test loadera
     images, labels = next(iter(test_loader))
     images = images.to(device)
     labels = labels.to(device)

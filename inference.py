@@ -1,4 +1,3 @@
-# inference.py
 import argparse
 
 import torch
@@ -8,7 +7,7 @@ import medmnist
 from medmnist import INFO
 
 from config import Config
-from models import build_model
+from models.cnn_models import build_model
 
 
 def load_model(ckpt_path: str, cfg: Config):
@@ -17,7 +16,14 @@ def load_model(ckpt_path: str, cfg: Config):
 
     model = build_model(cfg.model_type, n_classes=n_classes)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.load_state_dict(torch.load(ckpt_path, map_location=device))
+    
+    state = torch.load(ckpt_path, map_location=device)
+
+    if isinstance(state, dict) and "model_state" in state:
+        model.load_state_dict(state["model_state"])
+    else:
+        model.load_state_dict(state)
+
     model.to(device)
     model.eval()
     return model, device, info

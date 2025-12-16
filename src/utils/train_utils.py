@@ -1,4 +1,3 @@
-# train_utils.py
 import os
 from typing import Dict, Any
 
@@ -17,8 +16,8 @@ def get_device():
 def build_optimizer(cfg: Config, model: torch.nn.Module):
     if cfg.optimizer.lower() == "adam":
         return torch.optim.Adam(model.parameters(),
-                                lr=cfg.lr,
-                                weight_decay=cfg.weight_decay)
+                                 lr=cfg.lr,
+                                 weight_decay=cfg.weight_decay)
     elif cfg.optimizer.lower() == "sgd":
         return torch.optim.SGD(model.parameters(),
                                lr=cfg.lr,
@@ -142,7 +141,6 @@ def train_model(model,
             torch.save(best_state, ckpt_path)
             print(f"  >> Zapisano nowy najlepszy model (val_macro_f1={best_val_f1:.4f})")
 
-    # Załaduj najlepszy model
     if best_state is not None:
         model.load_state_dict(best_state)
 

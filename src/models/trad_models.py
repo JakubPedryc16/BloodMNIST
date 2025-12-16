@@ -1,4 +1,3 @@
-# traditional_models.py
 import os
 import time
 from typing import Tuple, Dict, List
@@ -21,24 +20,16 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV
 
 from config import Config
-from datasets import download_bloodmnist, LABELS_BLOODMNIST_SHORT
+from data.datasets import download_bloodmnist, LABELS_BLOODMNIST_SHORT
 
-
-# ==============================
-# Ładowanie i przygotowanie danych
-# ==============================
 
 def load_flattened_data(cfg: Config) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Ładuje dane z bloodmnist.npz, spłaszcza obrazy do wektorów (N, 28*28*3)
-    i zwraca X_train, y_train, X_val, y_val, X_test, y_test (wszystko jako numpy).
-    """
     root = os.path.join(cfg.output_dir, "data")
     npz_path = download_bloodmnist(root)
 
     data = np.load(npz_path)
 
-    X_train = data["train_images"]  # [N, 28, 28, 3]
+    X_train = data["train_images"]
     y_train = data["train_labels"].reshape(-1)
 
     X_val = data["val_images"]
@@ -47,7 +38,6 @@ def load_flattened_data(cfg: Config) -> Tuple[np.ndarray, np.ndarray, np.ndarray
     X_test = data["test_images"]
     y_test = data["test_labels"].reshape(-1)
 
-    # Spłaszczenie: (N, 28, 28, 3) -> (N, 2352)
     X_train = X_train.reshape(X_train.shape[0], -1).astype(np.float32)
     X_val = X_val.reshape(X_val.shape[0], -1).astype(np.float32)
     X_test = X_test.reshape(X_test.shape[0], -1).astype(np.float32)
@@ -65,19 +55,12 @@ def scale_data(
     X_val: np.ndarray,
     X_test: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, StandardScaler]:
-    """
-    Standaryzacja cech (średnia 0, odchylenie 1) na podstawie zbioru treningowego.
-    """
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_val_scaled = scaler.transform(X_val)
     X_test_scaled = scaler.transform(X_test)
     return X_train_scaled, X_val_scaled, X_test_scaled, scaler
 
-
-# ==============================
-# Wizualizacja – macierz pomyłek + podsumowanie modeli
-# ==============================
 
 def plot_confusion_matrix(cm: np.ndarray, class_names, title: str, output_path: str, normalize: bool = True):
     if normalize:
@@ -103,9 +86,6 @@ def plot_confusion_matrix(cm: np.ndarray, class_names, title: str, output_path: 
 
 
 def plot_results_summary(results: List[Dict], cfg: Config):
-    """
-    Prosta wizualizacja porównująca accuracy i macro-F1 dla wszystkich 4 modeli.
-    """
     out_dir = os.path.join(cfg.output_dir, "traditional_models")
     os.makedirs(out_dir, exist_ok=True)
 
@@ -115,7 +95,6 @@ def plot_results_summary(results: List[Dict], cfg: Config):
 
     x = np.arange(len(names))
 
-    # Wykres accuracy
     plt.figure(figsize=(8, 4))
     plt.bar(x, accs)
     plt.xticks(x, names, rotation=30, ha="right")
@@ -127,7 +106,6 @@ def plot_results_summary(results: List[Dict], cfg: Config):
     plt.close()
     print("Zapisano wykres accuracy do:", acc_path)
 
-    # Wykres macro-F1
     plt.figure(figsize=(8, 4))
     plt.bar(x, f1s)
     plt.xticks(x, names, rotation=30, ha="right")
@@ -140,10 +118,6 @@ def plot_results_summary(results: List[Dict], cfg: Config):
     print("Zapisano wykres macro-F1 do:", f1_path)
 
 
-# ==============================
-# Optymalizacja hiperparametrów (GridSearchCV – walidacja krzyżowa)
-# ==============================
-
 def tune_with_grid_search(
     name: str,
     base_estimator,
@@ -152,10 +126,6 @@ def tune_with_grid_search(
     y_train: np.ndarray,
     cv: int = 3,
 ):
-    """
-    Prosta optymalizacja hiperparametrów z użyciem GridSearchCV.
-    Używamy f1_macro jako metryki i walidacji krzyżowej cv-krotnej.
-    """
     print("-" * 80)
     print(f"[{name}] GridSearchCV – walidacja krzyżowa (cv={cv})")
     print("Param grid:", param_grid)
@@ -176,10 +146,6 @@ def tune_with_grid_search(
     return grid.best_estimator_
 
 
-# ==============================
-# Trenowanie i ewaluacja pojedynczego modelu
-# ==============================
-
 def run_model(
     name: str,
     model,
@@ -192,9 +158,6 @@ def run_model(
     cfg: Config,
     class_names,
 ) -> Dict:
-    """
-    Trenuje dany model, liczy metryki na walidacji i teście, zapisuje raporty i wykresy.
-    """
     os.makedirs(cfg.output_dir, exist_ok=True)
     out_dir = os.path.join(cfg.output_dir, "traditional_models")
     os.makedirs(out_dir, exist_ok=True)
@@ -203,25 +166,21 @@ def run_model(
     print(f"Model: {name}")
     print("=" * 80)
 
-    # Trening na pełnym zbiorze treningowym
     t0 = time.time()
     model.fit(X_train, y_train)
     t_train = time.time() - t0
     print(f"Czas trenowania: {t_train:.2f} s")
 
-    # Walidacja
     y_val_pred = model.predict(X_val)
     val_acc = accuracy_score(y_val, y_val_pred)
     val_f1 = f1_score(y_val, y_val_pred, average="macro")
     print(f"Walidacja: accuracy={val_acc:.4f}, macro-F1={val_f1:.4f}")
 
-    # Test
     y_test_pred = model.predict(X_test)
     test_acc = accuracy_score(y_test, y_test_pred)
     test_f1 = f1_score(y_test, y_test_pred, average="macro")
-    print(f"Test:       accuracy={test_acc:.4f}, macro-F1={test_f1:.4f}")
+    print(f"Test:      accuracy={test_acc:.4f}, macro-F1={test_f1:.4f}")
 
-    # Macierz pomyłek
     cm = confusion_matrix(y_test, y_test_pred)
     cm_norm_path = os.path.join(out_dir, f"{name}_cm_norm.png")
     cm_raw_path = os.path.join(out_dir, f"{name}_cm_raw.png")
@@ -241,7 +200,6 @@ def run_model(
         normalize=False,
     )
 
-    # Raport tekstowy
     report = classification_report(y_test, y_test_pred, target_names=class_names, digits=4)
     report_path = os.path.join(out_dir, f"{name}_report.txt")
     with open(report_path, "w", encoding="utf-8") as f:
@@ -258,26 +216,16 @@ def run_model(
     }
 
 
-# ==============================
-# Główny skrypt – 4 klasyczne modele
-# ==============================
-
 if __name__ == "__main__":
     cfg = Config()
     class_names = [LABELS_BLOODMNIST_SHORT[str(i)] for i in range(8)]
 
-    # 1. Załaduj dane
     X_train, y_train, X_val, y_val, X_test, y_test = load_flattened_data(cfg)
 
-    # 2. Standaryzacja
     X_train_s, X_val_s, X_test_s, scaler = scale_data(X_train, X_val, X_test)
 
     results = []
 
-    # ======================
-    # 3. Logistic Regression
-    # ======================
-    # Uwaga: minimalna wersja (bez multi_class, n_jobs – żeby działało na każdej wersji sklearn)
     lr_base = LogisticRegression(max_iter=500)
     lr_param_grid = {
         "C": [0.1, 1.0, 10.0],
@@ -307,9 +255,6 @@ if __name__ == "__main__":
         )
     )
 
-    # =========
-    # 4. SVM RBF
-    # =========
     svm_base = SVC(kernel="rbf")
     svm_param_grid = {
         "C": [0.5, 1.0, 5.0],
@@ -338,9 +283,6 @@ if __name__ == "__main__":
         )
     )
 
-    # ===============
-    # 5. Random Forest
-    # ===============
     rf_base = RandomForestClassifier(random_state=cfg.seed)
     rf_param_grid = {
         "n_estimators": [100, 200],
@@ -370,9 +312,6 @@ if __name__ == "__main__":
         )
     )
 
-    # =====================
-    # 6. MLPClassifier (NN)
-    # =====================
     mlp_base = MLPClassifier(
         hidden_layer_sizes=(256, 128),
         activation="relu",
@@ -408,7 +347,6 @@ if __name__ == "__main__":
         )
     )
 
-    # 7. Podsumowanie wyników + wizualizacja
     print("\nPodsumowanie wyników klasycznych modeli:")
     for res in results:
         print(

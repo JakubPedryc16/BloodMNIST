@@ -1,11 +1,10 @@
-# plot_utils.py
 import os
 from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import classification_report
-import seaborn as sns  # jeśli nie chcesz seaborn, da się to zrobić samym matplotlib
+import seaborn as sns
 
 from config import Config
 
@@ -16,7 +15,6 @@ def plot_training_curves(history: Dict[str, List[float]],
     os.makedirs(cfg.output_dir, exist_ok=True)
     epochs = range(1, len(history["train_loss"]) + 1)
 
-    # Loss
     plt.figure()
     plt.plot(epochs, history["train_loss"], label="train_loss")
     plt.plot(epochs, history["val_loss"], label="val_loss")
@@ -31,7 +29,6 @@ def plot_training_curves(history: Dict[str, List[float]],
         plt.show()
     plt.close()
 
-    # Accuracy i macro-F1
     plt.figure()
     plt.plot(epochs, history["val_accuracy"], label="val_accuracy")
     plt.plot(epochs, history["val_macro_f1"], label="val_macro_f1")
@@ -46,7 +43,6 @@ def plot_training_curves(history: Dict[str, List[float]],
         plt.show()
     plt.close()
 
-    # Learning rate
     plt.figure()
     plt.plot(epochs, history["lr"])
     plt.xlabel("Epoka")
@@ -91,7 +87,6 @@ def plot_confusion_matrix(cm: np.ndarray,
     if show:
         plt.show()
     plt.close()
-
 
 
 def save_classification_report(y_true,

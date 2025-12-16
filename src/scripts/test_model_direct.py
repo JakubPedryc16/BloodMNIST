@@ -1,35 +1,29 @@
-# debug_api_roundtrip.py
-
 import torch
 import numpy as np
 from PIL import Image
 
 from config import Config
-from models import build_model
-from datasets import download_bloodmnist
-from train_utils import get_device
-from api import preprocess_image_bytes   # <-- bierzemy dokładnie ten preprocess z API
+from models.cnn_models import build_model
+from data.datasets import download_bloodmnist
+from utils.train_utils import get_device
+from api import preprocess_image_bytes
 
 
 print("\n=========== TEST ROUNDTRIP API ===========")
 
 cfg = Config()
 
-# ----- 1) załaduj dane testowe -----
 npz = download_bloodmnist(cfg.output_dir + "/data")
 data = np.load(npz)
 X = data["test_images"]
 y = data["test_labels"].reshape(-1)
 
-# ----- 2) weź przykład 0 -----
 idx = 0
 img_arr = X[idx]
 true_class = int(y[idx])
 
-# ----- 3) przygotuj model takim samym kodem jak debug_model_direct -----
 device = get_device()
 
-# UWAGA — deep CNN, ten który działał!
 model = build_model("deep_cnn", n_classes=8)
 
 ckpt_path = f"{cfg.output_dir}/deep_cnn_adam_noaug.pt"
@@ -44,9 +38,8 @@ else:
 
 model.to(device).eval()
 
-# ----- 4) predykcja BEZ API (dokładnie jak debug_model_direct) -----
 img_tensor = torch.tensor(img_arr).permute(2, 0, 1).float() / 255.0
-img_tensor = (img_tensor - 0.5) / 0.5     # Normalize(mean=0.5, std=0.5)
+img_tensor = (img_tensor - 0.5) / 0.5
 img_tensor = img_tensor.unsqueeze(0).to(device)
 
 with torch.no_grad():
@@ -58,8 +51,6 @@ pred_direct = int(np.argmax(probs_direct))
 print(f"\n>>> direct_model pred = {pred_direct}, probs={np.round(probs_direct, 3)}")
 print(f"    true class = {true_class}\n")
 
-
-# ----- 5) predykcja PRZEZ API (zapis -> PNG -> preprocess API) -----
 img_pil = Image.fromarray(img_arr.astype(np.uint8))
 img_pil.save("test_roundtrip.png")
 

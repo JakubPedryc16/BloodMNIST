@@ -1,4 +1,3 @@
-# gui_app.py
 import os
 from io import BytesIO
 
@@ -10,17 +9,13 @@ import streamlit as st
 import requests
 
 from config import Config
-from datasets import LABELS_BLOODMNIST_FULL  # u Ciebie może być FULL, dostosuj
+from src.data.datasets import LABELS_BLOODMNIST_FULL
 
 
 API_URL = "http://127.0.0.1:8000/predict"
 
 
 def call_api_predict(image: Image.Image, model_type: str):
-    """
-    Wysyła obraz do API /predict i zwraca JSON z predykcją.
-    """
-    # zapisz obraz do bufora w formacie PNG
     buf = BytesIO()
     image.save(buf, format="PNG")
     buf.seek(0)
@@ -35,12 +30,11 @@ def call_api_predict(image: Image.Image, model_type: str):
 
 def main():
     st.set_page_config(page_title="Klasyfikacja krwinek – BloodMNIST (CNN)", layout="wide")
-    st.title("🩸 Klasyfikacja krwinek – BloodMNIST (CNN)")
+    st.title("Klasyfikacja krwinek – BloodMNIST (CNN)")
 
     cfg = Config()
 
-    # ----- SIDEBAR -----
-    st.sidebar.header("⚙️ Ustawienia modelu")
+    st.sidebar.header("Ustawienia modelu")
     model_type = st.sidebar.selectbox(
         "Typ modelu",
         options=["simple_cnn", "deep_cnn"],
@@ -52,17 +46,16 @@ def main():
     else:
         default_ckpt = os.path.join(cfg.output_dir, "deep_cnn_adam_noaug.pt")
 
-    # ----- GŁÓWNY UKŁAD -----
     col_left, col_right = st.columns([1, 1.2])
 
     with col_left:
-        st.subheader("1️⃣ Wybierz obraz komórki")
+        st.subheader("1. Wybierz obraz komórki")
         uploaded_file = st.file_uploader(
             "Wgraj obraz (PNG/JPG)",
             type=["png", "jpg", "jpeg"],
         )
 
-        with st.expander("💡 Info o klasach BloodMNIST", expanded=False):
+        with st.expander("Info o klasach BloodMNIST", expanded=False):
             for idx, name in LABELS_BLOODMNIST_FULL.items():
                 st.write(f"{idx}: {name}")
 
@@ -74,9 +67,9 @@ def main():
             st.warning("Nie załadowano obrazu. Wgraj plik, aby uruchomić predykcję.")
 
     with col_right:
-        st.subheader("2️⃣ Predykcja modelu")
+        st.subheader("2. Predykcja modelu")
 
-        if st.button("🔍 Uruchom predykcję", type="primary"):
+        if st.button("Uruchom predykcję", type="primary"):
             if image_to_show is None:
                 st.error("Najpierw wgraj obraz (PNG/JPG).")
             else:
@@ -84,7 +77,7 @@ def main():
                     result = call_api_predict(image_to_show, model_type)
                 except requests.exceptions.RequestException as e:
                     st.error(f"Nie udało się skontaktować z API: {e}")
-                    st.info("Czy na pewno uruchomiłeś:  uvicorn api:app --reload ?")
+                    st.info("Czy na pewno uruchomiłeś: uvicorn api:app --reload ?")
                 else:
                     pred_idx = int(result["predicted_class_idx"])
                     probs = np.array(result["probabilities"], dtype=float)
