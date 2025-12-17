@@ -1,10 +1,10 @@
 import torch
 import torch.nn.functional as F
 
-from config import Config
-from data.datasets import get_dataloaders, LABELS_BLOODMNIST_FULL
-from models.cnn_models import build_model
-from utils.train_utils import get_device
+from src.config import Config
+from src.data.datasets import get_dataloaders, LABELS_BLOODMNIST_FULL
+from src.models.cnn_models import build_model
+from src.utils.train_utils import get_device
 
 
 def load_model_direct(model_type: str, ckpt_path: str, n_classes: int = 8):

@@ -19,8 +19,8 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import GridSearchCV
 
-from config import Config
-from data.datasets import download_bloodmnist, LABELS_BLOODMNIST_SHORT
+from src.config import Config
+from src.data.datasets import download_bloodmnist, LABELS_BLOODMNIST_SHORT
 
 
 def load_flattened_data(cfg: Config) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:

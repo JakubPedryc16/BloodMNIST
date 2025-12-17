@@ -8,7 +8,7 @@ from PIL import Image
 import streamlit as st
 import requests
 
-from config import Config
+from src.config import Config
 from src.data.datasets import LABELS_BLOODMNIST_FULL
 
 

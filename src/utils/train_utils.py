@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
-from config import Config
+from src.config import Config
 
 
 def get_device():

@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.metrics import classification_report
 import seaborn as sns
 
-from config import Config
+from src.config import Config
 
 
 def plot_training_curves(history: Dict[str, List[float]],

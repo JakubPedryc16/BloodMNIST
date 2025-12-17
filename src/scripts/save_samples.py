@@ -5,10 +5,10 @@ from PIL import Image
 import torch
 import torch.nn.functional as F
 
-from config import Config
-from data.datasets import download_bloodmnist, LABELS_BLOODMNIST_FULL
-from models.cnn_models import build_model
-from utils.train_utils import get_device
+from src.config import Config
+from src.data.datasets import download_bloodmnist, LABELS_BLOODMNIST_FULL
+from src.models.cnn_models import build_model
+from src.utils.train_utils import get_device
 
 
 def main():

@@ -6,8 +6,8 @@ from PIL import Image
 import medmnist
 from medmnist import INFO
 
-from config import Config
-from models.cnn_models import build_model
+from src.config import Config
+from src.models.cnn_models import build_model
 
 
 def load_model(ckpt_path: str, cfg: Config):

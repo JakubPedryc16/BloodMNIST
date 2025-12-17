@@ -1,11 +1,11 @@
 from copy import deepcopy
 
-from config import Config
-from data.datasets import get_dataloaders
-from models.cnn_models import build_model
-from utils.train_utils import train_model, evaluate, get_device
-from utils.plot_utils import plot_training_curves, plot_confusion_matrix, save_classification_report
-from data.datasets import LABELS_BLOODMNIST_SHORT
+from src.config import Config
+from src.data.datasets import get_dataloaders
+from src.models.cnn_models import build_model
+from src.utils.train_utils import train_model, evaluate, get_device
+from src.utils.plot_utils import plot_training_curves, plot_confusion_matrix, save_classification_report
+from src.data.datasets import LABELS_BLOODMNIST_SHORT
 import torch
 import torch.nn as nn
 

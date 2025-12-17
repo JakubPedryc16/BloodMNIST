@@ -2,11 +2,11 @@ import torch
 import numpy as np
 from PIL import Image
 
-from config import Config
-from models.cnn_models import build_model
-from data.datasets import download_bloodmnist
-from utils.train_utils import get_device
-from api import preprocess_image_bytes
+from src.config import Config
+from src.models.cnn_models import build_model
+from src.data.datasets import download_bloodmnist
+from src.utils.train_utils import get_device
+from src.api import preprocess_image_bytes
 
 
 print("\n=========== TEST ROUNDTRIP API ===========")

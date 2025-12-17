@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import torch
 import torch.nn.functional as F
 
-from config import Config
+from src.config import Config
 from src.models.cnn_models import build_model
 from src.data.datasets import LABELS_BLOODMNIST_FULL
 from src.utils.train_utils import get_device

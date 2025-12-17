@@ -5,9 +5,9 @@ import cv2
 from torchvision import transforms
 from PIL import Image
 
-from config import Config
-from models.cnn_models import build_model
-from utils.train_utils import get_device
+from src.config import Config
+from src.models.cnn_models import build_model
+from src.utils.train_utils import get_device
 from medmnist import INFO
 import os
 
@@ -68,7 +68,8 @@ def visualize_grad_cam(image_path: str,
                        ckpt_path: str,
                        cfg: Config,
                        use_deep_layer: bool = False,
-                       output_path: str = "grad_cam_overlay.png"):
+                       output_path="outputs/grad_cam/grad_cam_example.png"
+    ):
     device = get_device()
     info = INFO[cfg.data_flag]
     n_classes = len(info["label"])
@@ -119,8 +120,8 @@ if __name__ == "__main__":
     cfg = Config()
     cfg.model_type = "deep_cnn"
     visualize_grad_cam(
-        image_path="jakis_obrazek.png",
+        image_path="inputs/example.png",
         ckpt_path="outputs/deep_cnn_adam_noaug.pt",
         cfg=cfg,
-        output_path="grad_cam_example.png"
+        output_path="outputs/grad_cam/grad_cam_example.png"
     )
