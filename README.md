@@ -116,3 +116,5 @@ Projekt wykorzystuje **BloodMNIST**, będący częścią zbioru **MedMNIST**.
 Zbiór zawiera obrazy mikroskopowe komórek krwi (28×28 RGB) przypisane do 8 klas.
 
 ---
+
+**Authors:** **Jakub Pedryc** and **Maciej Łabuz**
