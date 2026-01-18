@@ -117,4 +117,4 @@ Zbiór zawiera obrazy mikroskopowe komórek krwi (28×28 RGB) przypisane do 8 kl
 
 ---
 
-**Authors:** **Jakub Pedryc** and **Maciej Łabuz**
+**Authors:** **Jakub Pedryc** and **Maciej Łabuz** and **Grzegorz Piasny**
